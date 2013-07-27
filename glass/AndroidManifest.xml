@@ -17,8 +17,10 @@
       package="com.example.android.BluetoothChat"
       android:versionCode="1"
       android:versionName="1.0">
+    
     <uses-sdk minSdkVersion="15"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="17" />
+    
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
