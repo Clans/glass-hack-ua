@@ -10,6 +10,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.glasshack.androidglass.entity.Entity;
+import com.glasshack.androidglass.entity.utils.SystemUtils;
 
 public class MyActivity extends BluetoothActivity {
 
@@ -33,16 +38,25 @@ public class MyActivity extends BluetoothActivity {
                 }
             }
         });
+
+        Button imagePick = (Button) findViewById(R.id.image_picker);
+        imagePick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
     }
 
     @Override
-    protected void readText() {
-
+    protected void readText(Entity entity) {
+        ((TextView) findViewById(R.id.received_message)).setText(entity.getData().toString());
     }
 
     @Override
-    protected void readAction() {
-
+    protected void readImage(Entity entity) {
+        ((ImageView) findViewById(R.id.image)).setImageBitmap(SystemUtils.stringToBitmap(
+                (String) entity.getData()));
     }
 
     @Override
