@@ -20,4 +20,7 @@ public class Constants {
 
     public static final int TYPE_TEXT = 0;
     public static final int TYPE_ACTION = 1;
+    
+    public static final String PARAM_EXTRA = "extra";
+    
 }

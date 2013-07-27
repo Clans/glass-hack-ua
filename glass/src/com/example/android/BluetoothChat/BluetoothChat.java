@@ -304,12 +304,18 @@ public class BluetoothChat extends Activity {
 							Entity.class);
 					mConversationArrayAdapter.add(mConnectedDeviceName + ":  "
 							+ entityResult.getData().toString());
+					Intent intent;
 					switch (entityResult.getType()) {
 					case Constants.TYPE_ACTION:
-						mConversationArrayAdapter.add("Action");
+						//mConversationArrayAdapter.add("Action");
+						intent = new Intent(BluetoothChat.this, ActivityShowPicture.class);
+						//intent.putExtra(Constants.PARAM_EXTRA, entityResult.getData());
+						startActivity(intent);
 						break;
 					case Constants.TYPE_TEXT :
-						mConversationArrayAdapter.add("Text");
+						intent = new Intent(BluetoothChat.this, ActivityShowAndPlayText.class);
+						intent.putExtra(Constants.PARAM_EXTRA, entityResult.getData().toString());
+						startActivity(intent);
 						break;
 					default:
 						break;
