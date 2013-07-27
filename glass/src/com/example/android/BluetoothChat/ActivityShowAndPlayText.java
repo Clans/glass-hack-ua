@@ -9,6 +9,7 @@ import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,20 +17,26 @@ public class ActivityShowAndPlayText extends Activity implements OnInitListener 
 	private TextToSpeech tts;
 	TextView textView ;
 	String textToShow;
+	FrameLayout flRoot;
+	//ScrollView scrollView;
+	private boolean isInited;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activty_text);
+		isInited = false;
 		tts = new TextToSpeech(this, this);
+		flRoot = (FrameLayout)findViewById(R.id.flRoot);
 		if (getIntent().hasExtra(Constants.PARAM_EXTRA)){
 			textToShow = getIntent().getExtras().getString(Constants.PARAM_EXTRA);
 			textView = (TextView) findViewById(R.id.textView);
 			textView.setText(textToShow);
-			textView.setOnClickListener(new OnClickListener() {
+			flRoot.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					speakOut(textToShow);
+					if (isInited)
+						speakOut(textToShow);
 				}
 			});
 		}
@@ -65,7 +72,7 @@ public class ActivityShowAndPlayText extends Activity implements OnInitListener 
 			// Enable the button - It was disabled in main.xml (Go back and
 			// Check it)
 			else {
-				textView.setEnabled(true);
+				isInited = true;
 			}
 			// TTS is not initialized properly
 		} else {
