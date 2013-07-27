@@ -11,6 +11,7 @@ public class SystemUtils {
 	}
 
 	public static String bitmapToString(Bitmap bitmap) {
+		bitmap = Bitmap.createScaledBitmap(bitmap, 640, 360, false);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
 		byte[] b = baos.toByteArray();
