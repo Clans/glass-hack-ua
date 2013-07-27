@@ -18,7 +18,7 @@ public class MyActivity extends BluetoothActivity {
     @Override
     protected void readAction() {
 
-s	}
+	}
 
 	/*
 	 * Write 
