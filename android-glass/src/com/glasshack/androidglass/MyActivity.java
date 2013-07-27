@@ -18,5 +18,17 @@ public class MyActivity extends BluetoothActivity {
     @Override
     protected void readAction() {
 
-    }
+s	}
+
+	/*
+	 * Write 
+	 * ObjectMapper mapper = new ObjectMapper();
+	 * Entity entity = new
+	 * Entity(4, "Ok, Glass");
+	 * String result = mapper.writeValueAsString(entity);
+	 */
+
+	/* Read 
+	 * Entity entityResult = mapper.readValue(resultJsonString, Entity.class);
+	 * */
 }
