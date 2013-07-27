@@ -19,5 +19,5 @@ public class Constants {
     public static final String DATA = "data";
 
     public static final int TYPE_TEXT = 0;
-    public static final int TYPE_ACTION = 1;
+    public static final int TYPE_IMAGE = 1;
 }

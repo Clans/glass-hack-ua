@@ -4,13 +4,18 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.widget.TextView;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import com.glasshack.androidglass.entity.Entity;
+import com.glasshack.androidglass.entity.utils.SystemUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -19,6 +24,7 @@ import java.io.IOException;
 public abstract class BluetoothActivity extends Activity {
 
     private static final int REQUEST_ENABLE_BT = 3;
+    private static final int SELECT_PHOTO = 4;
 
     private String mConnectedDeviceName;
     // Local Bluetooth adapter
@@ -110,6 +116,24 @@ public abstract class BluetoothActivity extends Activity {
                     Toast.makeText(this, "Bluetooth not enabled", Toast.LENGTH_SHORT).show();
                     finish();
                 }
+                break;
+            case SELECT_PHOTO:
+                if (resultCode == RESULT_OK) {
+                    Uri selectedImage = data.getData();
+                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                    Cursor cursor = getContentResolver().query(
+                            selectedImage, filePathColumn, null, null, null);
+                    cursor.moveToFirst();
+
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    String filePath = cursor.getString(columnIndex);
+                    cursor.close();
+
+
+                    Bitmap selectedBitmap = BitmapFactory.decodeFile(filePath);
+                    sendImage(selectedBitmap);
+                }
         }
     }
 
@@ -141,15 +165,13 @@ public abstract class BluetoothActivity extends Activity {
                     String writeMessage = new String(writeBuf);
 
                     break;
-                //TODO: maintain different types of messages
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
                     try {
                         Entity entityResult = mapper.readValue(readBuf, Entity.class);
-                        ((TextView) findViewById(R.id.received_message))
-                                .setText(entityResult.getData().toString());
+                        int type = entityResult.getType();
+                        readMessage(type, entityResult);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -172,13 +194,13 @@ public abstract class BluetoothActivity extends Activity {
         }
     };
 
-    private void readMessage(int dataType) {
+    private void readMessage(int dataType, Entity entity) {
         switch (dataType) {
             case Constants.TYPE_TEXT:
-                readText();
+                readText(entity);
                 break;
-            case Constants.TYPE_ACTION:
-                readAction();
+            case Constants.TYPE_IMAGE:
+                readImage(entity);
                 break;
         }
     }
@@ -193,7 +215,6 @@ public abstract class BluetoothActivity extends Activity {
         // Check that there's actually something to send
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothChatService to write
-
             Entity entity = new Entity(Constants.TYPE_TEXT, message);
             try {
                 String result = mapper.writeValueAsString(entity);
@@ -205,7 +226,32 @@ public abstract class BluetoothActivity extends Activity {
         }
     }
 
-    protected abstract void readText();
+    protected void openImagePicker() {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+    }
 
-    protected abstract void readAction();
+    protected void sendImage(Bitmap bitmap) {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(this, "Not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (bitmap != null) {
+            Entity entity = new Entity(Constants.TYPE_IMAGE, SystemUtils.bitmapToString(bitmap));
+            try {
+                String result = mapper.writeValueAsString(entity);
+                byte[] send = result.getBytes();
+                mChatService.write(send);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected abstract void readText(Entity entity);
+
+    protected abstract void readImage(Entity entity);
 }

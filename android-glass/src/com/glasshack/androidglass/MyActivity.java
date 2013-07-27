@@ -43,7 +43,7 @@ public class MyActivity extends BluetoothActivity {
         imagePick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                openImagePicker();
             }
         });
     }
