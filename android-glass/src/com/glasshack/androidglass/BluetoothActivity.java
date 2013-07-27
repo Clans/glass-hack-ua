@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.glasshack.androidglass.entity.Entity;
@@ -19,7 +20,9 @@ import com.glasshack.androidglass.entity.utils.SystemUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 public abstract class BluetoothActivity extends Activity {
 
@@ -130,9 +133,13 @@ public abstract class BluetoothActivity extends Activity {
                     String filePath = cursor.getString(columnIndex);
                     cursor.close();
 
-
-                    Bitmap selectedBitmap = BitmapFactory.decodeFile(filePath);
-                    sendImage(selectedBitmap);
+                    try {
+                        InputStream is = getContentResolver().openInputStream(selectedImage);
+                        Bitmap bitmap = BitmapFactory.decodeStream(is);
+                        sendImage(bitmap);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
         }
     }
