@@ -1,9 +1,6 @@
 package com.glasshack.androidglass;
 
-import net.linkpc.fenixhomepro.testapp.R;
-import net.linkpc.fenixhomepro.testapp.SystemUtils;
 import android.os.Bundle;
-import android.widget.ImageView;
 
 public class MyActivity extends BluetoothActivity {
 
