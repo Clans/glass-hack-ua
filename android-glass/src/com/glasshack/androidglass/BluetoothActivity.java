@@ -6,7 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.glasshack.androidglass.entity.Entity;
+
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 
 public abstract class BluetoothActivity extends Activity {
 
@@ -17,7 +24,7 @@ public abstract class BluetoothActivity extends Activity {
     private BluetoothAdapter mBluetoothAdapter = null;
     // Member object for the chat services
     private BluetoothChatService mChatService = null;
-    private StringBuffer mOutStringBuffer;
+    private ObjectMapper mapper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +32,7 @@ public abstract class BluetoothActivity extends Activity {
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mapper = new ObjectMapper();
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
@@ -74,9 +82,6 @@ public abstract class BluetoothActivity extends Activity {
     private void setupService() {
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(this, mHandler);
-
-        // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
     }
 
     @Override
@@ -123,13 +128,20 @@ public abstract class BluetoothActivity extends Activity {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
+
                     break;
                 //TODO: maintain different types of messages
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-
+                    try {
+                        Entity entityResult = mapper.readValue(readBuf, Entity.class);
+                        ((TextView) findViewById(R.id.received_message))
+                                .setText(entityResult.getData().toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
@@ -157,6 +169,28 @@ public abstract class BluetoothActivity extends Activity {
             case Constants.TYPE_ACTION:
                 readAction();
                 break;
+        }
+    }
+
+    protected void sendText(String message) {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(this, "Not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length() > 0) {
+            // Get the message bytes and tell the BluetoothChatService to write
+
+            Entity entity = new Entity(Constants.TYPE_TEXT, message);
+            try {
+                String result = mapper.writeValueAsString(entity);
+                byte[] send = result.getBytes();
+                mChatService.write(send);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
