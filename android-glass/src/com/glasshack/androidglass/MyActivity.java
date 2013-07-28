@@ -35,6 +35,7 @@ public class MyActivity extends BluetoothActivity {
             public void onClick(View view) {
                 if (!TextUtils.isEmpty(message.getText())) {
                     sendText(message.getText().toString());
+                    message.setText("");
                 }
             }
         });

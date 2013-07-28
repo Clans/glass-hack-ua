@@ -123,15 +123,6 @@ public abstract class BluetoothActivity extends Activity {
             case SELECT_PHOTO:
                 if (resultCode == RESULT_OK) {
                     Uri selectedImage = data.getData();
-                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
-                    Cursor cursor = getContentResolver().query(
-                            selectedImage, filePathColumn, null, null, null);
-                    cursor.moveToFirst();
-
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String filePath = cursor.getString(columnIndex);
-                    cursor.close();
 
                     try {
                         InputStream is = getContentResolver().openInputStream(selectedImage);
