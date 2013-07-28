@@ -36,6 +36,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -68,11 +70,14 @@ public class BluetoothChatService {
     private ConnectedThread mConnectedThread;
     private int mState;
 
+    private List<byte[]> queue = new LinkedList<byte[]>();
+
     // Constants that indicate the current connection state
     public static final int STATE_NONE = 0;       // we're doing nothing
     public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+    private boolean busy;
 
     /**
      * Constructor. Prepares a new BluetoothChat session.
@@ -489,19 +494,34 @@ public class BluetoothChatService {
 
         /**
          * Write to the connected OutStream.
-         * @param buffer  The bytes to write
+         * @param buf  The bytes to write
          */
-        public void write(byte[] buffer) {
-            try {
-                mmOutStream.write(intToBytes(buffer.length));
-                mmOutStream.write(buffer);
+        public void write(final byte[] buf) {
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        byte[] buffer = buf;
+                        if (!busy) {
+                            busy = true;
+                            mmOutStream.write(intToBytes(buffer.length));
+                            mmOutStream.write(buffer);
 
-                // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
-                        .sendToTarget();
-            } catch (IOException e) {
-                Log.e(TAG, "Exception during write", e);
-            }
+                            // Share the sent message back to the UI Activity
+                            mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
+                            busy = false;
+                            if (!queue.isEmpty()) {
+                                buffer = queue.get(0);
+                                queue.remove(0);
+                                write(buffer);
+                            }
+                        } else {
+                            queue.add(buffer);
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Exception during write", e);
+                    }
+                }
+            }).start();
         }
 
         public void cancel() {
