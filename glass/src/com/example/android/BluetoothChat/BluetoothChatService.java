@@ -16,8 +16,13 @@
 
 package com.example.android.BluetoothChat;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
@@ -445,16 +450,28 @@ public class BluetoothChatService {
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
             byte[] buffer = new byte[1024];
+            byte[] intBuf = new byte[10];
             int bytes;
-
-            // Keep listening to the InputStream while connected
+            int length;
             while (true) {
                 try {
+                    mmInStream.read(intBuf);
+                    length = bytesToInt(intBuf);
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+//                    bytes = mmInStream.read(buffer);
+
+                    int remaining = length;
+                    int read = 0;
+                    ByteArrayOutputStream bis = new ByteArrayOutputStream();
+
+                    while (remaining > 0
+                            && (read = mmInStream.read(buffer, 0, Math.min(remaining, buffer.length))) >= 0) {
+                        bis.write(buffer, 0, read);
+                        remaining -= read;
+                    }
 
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(BluetoothChat.MESSAGE_READ, bytes, -1, buffer)
+                    mHandler.obtainMessage(Constants.MESSAGE_READ, length, -1, bis.toByteArray())
                             .sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
@@ -464,8 +481,43 @@ public class BluetoothChatService {
                     break;
                 }
             }
+            // Keep listening to the InputStream while connected
+//            while (true) {
+//                try {
+//                    // Read from the InputStream
+//                    bytes = mmInStream.read(buffer);
+//
+//                    // Send the obtained bytes to the UI Activity
+//                    mHandler.obtainMessage(BluetoothChat.MESSAGE_READ, bytes, -1, buffer)
+//                            .sendToTarget();
+//                } catch (IOException e) {
+//                    Log.e(TAG, "disconnected", e);
+//                    connectionLost();
+//                    // Start the service over to restart listening mode
+//                    BluetoothChatService.this.start();
+//                    break;
+//                }
+//            }
         }
 
+        private byte[] intToBytes(int my_int) throws IOException {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutput out = new ObjectOutputStream(bos);
+            out.writeInt(my_int);
+            out.close();
+            byte[] int_bytes = bos.toByteArray();
+            bos.close();
+            return int_bytes;
+        }
+
+        private int bytesToInt(byte[] int_bytes) throws IOException {
+            ByteArrayInputStream bis = new ByteArrayInputStream(int_bytes);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            int my_int = ois.readInt();
+            ois.close();
+            return my_int;
+        }
+        
         /**
          * Write to the connected OutStream.
          * @param buffer  The bytes to write

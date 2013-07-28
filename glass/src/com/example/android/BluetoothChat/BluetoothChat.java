@@ -302,14 +302,14 @@ public class BluetoothChat extends Activity {
 				try {
 					Entity entityResult = mapper.readValue(readBuf,
 							Entity.class);
-					mConversationArrayAdapter.add(mConnectedDeviceName + ":  "
-							+ entityResult.getData().toString());
+					//mConversationArrayAdapter.add(mConnectedDeviceName + ":  "
+					//		+ entityResult.getData().toString());
 					Intent intent;
 					switch (entityResult.getType()) {
 					case Constants.TYPE_ACTION:
 						//mConversationArrayAdapter.add("Action");
 						intent = new Intent(BluetoothChat.this, ActivityShowPicture.class);
-						//intent.putExtra(Constants.PARAM_EXTRA, entityResult.getData());
+						intent.putExtra(Constants.PARAM_EXTRA, (String)entityResult.getData());
 						startActivity(intent);
 						break;
 					case Constants.TYPE_TEXT :
