@@ -14,12 +14,17 @@
      limitations under the License.
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/secure_connect_scan"
-          android:icon="@android:drawable/ic_menu_search"
-          android:title="Secure connect"
-          android:showAsAction="ifRoom|withText" />
-    <item android:id="@+id/insecure_connect_scan"
-          android:icon="@android:drawable/ic_menu_search"
-          android:title="Insecure connect"
-          android:showAsAction="ifRoom|withText" />
+
+    <item
+            android:id="@+id/secure_connect_scan"
+            android:icon="@android:drawable/ic_menu_search"
+            android:title="Secure connect"
+            android:showAsAction="ifRoom|withText"
+            android:visible="false"/>
+    <item
+            android:id="@+id/insecure_connect_scan"
+            android:icon="@android:drawable/ic_menu_search"
+            android:title="Establish connection"
+            android:showAsAction="ifRoom|withText"/>
+
 </menu>

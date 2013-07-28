@@ -16,7 +16,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:inputType="text"/>
+                android:inputType="text"
+                android:hint="Message"/>
 
         <Button
                 android:id="@+id/send"
@@ -31,6 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            style="@android:style/Widget.Holo.Light.Spinner"
             android:text="Pick an image"/>
 
     <TextView
